@@ -4,6 +4,10 @@ arduino-mp3-player
 A home made mp3/ogg/flac player based on an Ardnuino Micro and a VS1053 DSP.
 
 
+![With the LCD display](https://pbs.twimg.com/media/Bx1wlU1CIAIJqPz.jpg:small)
+![Arduino micro connected to DSP](https://pbs.twimg.com/media/BxwyLgXIAAARbxZ.jpg:small)
+
+
 ## Parts ##
 
 - Arduino Micro
@@ -22,4 +26,4 @@ To connect the LCD, use Arduino micro analog pins, from A0 to A5 (more on that l
 
 ## Resources ##
 
-You may find more resources about that project on that RSS feeds : https://rsstodolist.appspot.com/?name=mp3player
+You may find more resources about that project on that [RSS feed](https://rsstodolist.appspot.com/?name=mp3player&l=100).
