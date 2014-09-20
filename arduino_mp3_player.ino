@@ -19,27 +19,9 @@ LiquidCrystal lcd(A0, A1, A5, A4, A3, A2);
 #define PRESS 4
 
 #define INTERVAL 100
+
 #define SERIAL true
 #define LCD true
-
-void show(char * m) {
-  showAtXY(m, 0, 0);
-}
-
-void showatY(char * m, uint8_t y) {
-  showAtXY(m, 0, y);
-}
-
-void showAtXY(char * m, uint8_t x, uint8_t y) {
-  if (LCD) {
-    lcd.setCursor(x, y);
-    lcd.print(m);
-  }
-  if (SERIAL) {
-    Serial.println(m);
-  }
-}
-
 
 void setup() {
   pinMode(A0, OUTPUT);
@@ -50,9 +32,9 @@ void setup() {
   pinMode(A5, OUTPUT);
   lcd.begin(16, 2);
 
-  if (LCD) {
-    Serial.begin(9600);
-  }
+#ifdef SERIAL
+  Serial.begin(9600);
+#endif
 
   if (!musicPlayer.begin()) {
     show("VS1053 not found");
@@ -82,7 +64,7 @@ void setup() {
   musicPlayer.GPIO_pinMode(3, INPUT);
   musicPlayer.GPIO_pinMode(4, INPUT);
 
-
+// Launch music at first
   musicPlayer.startPlayingFile("track001.mp3");
   show("Playing track001");
 }
@@ -130,40 +112,8 @@ void loop() {
   delay(INTERVAL);
 }
 
-char* formatTime(char* buffer, uint16_t time) {
-  int hours = time / 3600;
-  int minutes = (time % 3600) / 60;
-  int seconds = (time% 3600) % 60; 
 
-  sprintf(buffer, "%02i:%02i:%02i", hours, minutes, seconds);
-}
 
-/// File listing helper
-void printDirectory(File dir, int numTabs) {
-  while(true) {
-
-    File entry =  dir.openNextFile();
-    if (! entry) {
-      // no more files
-      //Serial.println("**nomorefiles**");
-      break;
-    }
-    for (uint8_t i=0; i<numTabs; i++) {
-      Serial.print('\t');
-    }
-    Serial.print(entry.name());
-    if (entry.isDirectory()) {
-      Serial.println("/");
-      printDirectory(entry, numTabs+1);
-    } 
-    else {
-      // files have sizes, directories do not
-      Serial.print("\t\t");
-      Serial.println(entry.size(), DEC);
-    }
-    entry.close();
-  }
-}
 
 
 
