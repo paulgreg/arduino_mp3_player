@@ -25,3 +25,10 @@ char* formatTime(char* buffer, uint16_t time) {
   sprintf(buffer, "%02i:%02i:%02i", hours, minutes, seconds);
 }
 
+char timebuffer[9];
+
+void displayElapsedTime() {
+  formatTime(timebuffer, musicPlayer.decodeTime());
+  showAtXY(timebuffer, 1, 1);
+}
+

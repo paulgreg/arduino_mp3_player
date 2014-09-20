@@ -17,10 +17,10 @@ LiquidCrystal lcd(A0, A1, A5, A4, A3, A2);
 #define DOWN 2
 #define RIGHT 3
 #define PRESS 4
+#define NO_ACTION 5
 
-#define INTERVAL 100
+#define PAUSE_AFTER_ACTION 250
 
-#define SERIAL true
 #define LCD true
 
 void setup() {
@@ -38,16 +38,14 @@ void setup() {
 
   if (!musicPlayer.begin()) {
     show("VS1053 not found");
-    while (1);
+    while (1); // don't do anything more
   }
-
-  show("VS1053 found");
 
   if (!SD.begin(CARDCS)) {
-    show("SD not found");
-    while (1);  // don't do anything more
+    show("SD card not found");
+    while (1); // don't do anything more
   }
-  show("SD found");
+  show("SD card found");
 
   // list files
   printDirectory(SD.open("/"), 0);
@@ -64,62 +62,76 @@ void setup() {
   musicPlayer.GPIO_pinMode(3, INPUT);
   musicPlayer.GPIO_pinMode(4, INPUT);
 
-// Launch music at first
+  // Launch music at first
   musicPlayer.startPlayingFile("track001.mp3");
   show("Playing track001");
 }
 
+uint8_t action;
+boolean last_action;
 
 void loop() {
 
-  showAtXY("     ", 10, 1);
-
-  for (uint8_t i=0; i<5; i++) { 
-    delay(10);
-    if (musicPlayer.GPIO_digitalRead(i) == 1) {    
-      switch(i) {
-      case UP:
-        showAtXY("UP   ", 10, 1);
-        break;
-      case DOWN:
-        showAtXY("DOWN ", 10, 1);
-        break;
-      case LEFT:
-        showAtXY("LEFT ", 10, 1);
-        break;
-      case RIGHT:
-        showAtXY("RIGHT", 10, 1);
-        break;
-      case PRESS:
-        showAtXY("PRESS", 10, 1);
-        if (!musicPlayer.paused()) {
-          showAtXY("\"", 0, 1);
-          musicPlayer.pausePlaying(true);
-        } 
-        else {
-          showAtXY(" ", 0, 1);
-          musicPlayer.pausePlaying(false);
-        }
+  action = NO_ACTION;
+  // Check inputs
+    for (action = 0; action < 5; action++) { 
+      delay(50); // Wait a little bit between digital pin read
+      if (musicPlayer.GPIO_digitalRead(action) == 1) {    
         break;
       }
     }
+  
+  
+
+  switch(action) {
+  case UP:
+    showAtXY("UP   ", 10, 1);
+    afterAction();
+    break;
+
+  case DOWN:
+    showAtXY("DOWN ", 10, 1);
+    afterAction();
+    break;
+
+  case LEFT:
+    showAtXY("LEFT ", 10, 1);
+    afterAction();
+    break;
+
+  case RIGHT:
+    showAtXY("RIGHT", 10, 1);
+    afterAction();
+    break;
+
+  case PRESS:
+    showAtXY("PRESS", 10, 1);
+    if (!musicPlayer.paused()) {
+      showAtXY("\"", 0, 1);
+      musicPlayer.pausePlaying(true);
+    } 
+    else {
+      showAtXY(" ", 0, 1);
+      musicPlayer.pausePlaying(false);
+    }
+    afterAction();
+    break;
+
+  case NO_ACTION:
+    if (last_action == true) {
+      showAtXY("     ", 10, 1);
+      last_action = false;
+    }
+    break;
   }
 
-  char timebuffer[8];
-  formatTime(timebuffer, musicPlayer.decodeTime());
-  showAtXY(timebuffer, 1, 1);
-
-  delay(INTERVAL);
+  displayElapsedTime();
 }
 
-
-
-
-
-
-
-
-
+void afterAction() {
+  last_action = true;
+  delay(PAUSE_AFTER_ACTION);
+}
 
 
 
