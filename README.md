@@ -10,7 +10,7 @@ A home made mp3/ogg/flac player based on an Ardnuino Micro and a VS1053 DSP.
 
 ## Parts ##
 
-- Arduino Micro
+- [Arduino Micro](http://arduino.cc/en/Main/ArduinoBoardMicro)
 - [VS1053 Codec + MicroSD Breakout](https://www.adafruit.com/products/1381)
 - LCD display (from Arduino starter kit)
 - [Thru-hole 5-way Navigation switch](https://www.adafruit.com/products/504)
