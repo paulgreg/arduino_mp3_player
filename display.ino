@@ -32,3 +32,12 @@ void displayElapsedTime() {
   showAtXY(timebuffer, 1, 1);
 }
 
+
+void displayPause() {
+  showAtXY("\"", 0, 1);
+}
+
+void hidePause() {
+  showAtXY(" ", 0, 1);
+}
+

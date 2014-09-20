@@ -74,14 +74,14 @@ void loop() {
 
   action = NO_ACTION;
   // Check inputs
-    for (action = 0; action < 5; action++) { 
-      delay(50); // Wait a little bit between digital pin read
-      if (musicPlayer.GPIO_digitalRead(action) == 1) {    
-        break;
-      }
+  for (action = 0; action < 5; action++) { 
+    delay(50); // Wait a little bit between digital pin read
+    if (musicPlayer.GPIO_digitalRead(action) == 1) {    
+      break;
     }
-  
-  
+  }
+
+
 
   switch(action) {
   case UP:
@@ -107,14 +107,15 @@ void loop() {
   case PRESS:
     showAtXY("PRESS", 10, 1);
     if (!musicPlayer.paused()) {
-      showAtXY("\"", 0, 1);
       musicPlayer.pausePlaying(true);
-    } 
+      displayPause();
+      } 
     else {
-      showAtXY(" ", 0, 1);
       musicPlayer.pausePlaying(false);
-    }
-    afterAction();
+      hidePause();
+      }
+
+      afterAction();
     break;
 
   case NO_ACTION:
@@ -132,6 +133,7 @@ void afterAction() {
   last_action = true;
   delay(PAUSE_AFTER_ACTION);
 }
+
 
 
 
