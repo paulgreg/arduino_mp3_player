@@ -32,4 +32,6 @@ To connect the LCD, use Arduino micro analog pins, from A0 to A5 :
 
 ## Resources ##
 
-You may find more resources about that project on that [RSS feed](https://rsstodolist.appspot.com/?name=mp3player&l=100).
+- [Adafruit VS1053 library](https://github.com/adafruit/Adafruit_VS1053_Library),
+- [VS1053b Datasheet](https://www.adafruit.com/datasheets/vs1053.pdf),
+- More resources in that [RSS feed](https://rsstodolist.appspot.com/?name=mp3player&l=100).
