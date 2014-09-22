@@ -24,6 +24,8 @@ LiquidCrystal lcd(A0, A1, A5, A4, A3, A2);
 #define LCD true
 #define SERIAL true
 
+uint8_t volume = 20;
+
 void setup() {
   pinMode(A0, OUTPUT);
   pinMode(A1, OUTPUT);
@@ -51,7 +53,7 @@ void setup() {
   // list files
   printDirectory(SD.open("/"), 0);
 
-  musicPlayer.setVolume(40,40); // Set volume for left, right channels. lower numbers == louder volume!  
+  musicPlayer.setVolume(volume,volume); // Set volume for left, right channels. lower numbers == louder volume!  
 
   if (! musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT)) {
     show("DREQ pin not irq");
@@ -64,8 +66,8 @@ void setup() {
   musicPlayer.GPIO_pinMode(PRESS, INPUT);
 
   // Launch music at first
-  musicPlayer.startPlayingFile("track001.mp3");
-  show("Playing track001");
+  musicPlayer.startPlayingFile("track002.mp3");
+  show("Playing track002");
 }
 
 uint8_t action;
@@ -88,26 +90,53 @@ void loop() {
   switch(action) {
   case UP:
     showAtXY("UP   ", 10, 1);
+
+    if (volume > 0) {
+      volume--;
+    }
+    musicPlayer.setVolume(volume,volume);
+
     afterAction();
     break;
 
   case DOWN:
     showAtXY("DOWN ", 10, 1);
+
+    if (volume < 20) {
+      volume++;
+    }
+    musicPlayer.setVolume(volume,volume);
+
     afterAction();
     break;
 
   case LEFT:
     showAtXY("LEFT ", 10, 1);
+
+    musicPlayer.stopPlaying();
+    delay(50);
+    musicPlayer.startPlayingFile("track002.mp3");
+    show("Playing track002");
+    hidePause();
+
     afterAction();
     break;
 
   case RIGHT:
     showAtXY("RIGHT", 10, 1);
+
+    musicPlayer.stopPlaying();
+    delay(50);
+    musicPlayer.startPlayingFile("track001.mp3");
+    show("Playing track001");
+    hidePause();
+
     afterAction();
     break;
 
   case PRESS:
     showAtXY("PRESS", 10, 1);
+
     if (!musicPlayer.paused()) {
       musicPlayer.pausePlaying(true);
       displayPause();
@@ -135,6 +164,9 @@ void afterAction() {
   last_action = true;
   delay(PAUSE_AFTER_ACTION);
 }
+
+
+
 
 
 
