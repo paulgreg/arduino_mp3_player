@@ -18,11 +18,15 @@ void showAtXY(char * m, uint8_t x, uint8_t y) {
 }
 
 char* formatTime(char* buffer, uint16_t time) {
-  int hours = time / 3600;
-  int minutes = (time % 3600) / 60;
-  int seconds = (time% 3600) % 60; 
+  uint8_t hours = time / 3600;
+  uint8_t minutes = (time % 3600) / 60;
+  uint8_t seconds = (time% 3600) % 60; 
 
-  sprintf(buffer, "%02i:%02i:%02i", hours, minutes, seconds);
+  int8_t num = sprintf(buffer, "%02i:%02i:%02i", hours, minutes, seconds);
+  
+  if(num >= 9 – 1 || num < 0) {
+    showAtXY("BUFFER OVERFLOW", 0, 1);
+  } 
 }
 
 char timebuffer[9];
