@@ -12,12 +12,11 @@
 Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(VS1053_RESET, VS1053_CS, VS1053_DCS, VS1053_DREQ, VS1053_CARDCS);
 LiquidCrystal lcd(A0, A1, A5, A4, A3, A2);
 
-#define NO_ACTION 0
 #define UP 1
 #define LEFT 2
-#define DOWN 3
-#define RIGHT 4
-#define PRESS 5
+#define DOWN 4
+#define RIGHT 8
+#define PRESS 16
 
 #define PAUSE_AFTER_ACTION 250
 
@@ -70,25 +69,14 @@ void setup() {
   show("Playing track002");
 }
 
-uint8_t action;
 boolean last_action;
 
 void loop() {
 
-  action = NO_ACTION;
-
   // Check inputs
-  for (uint8_t i = 1; i < 6; i++) { 
-    if (musicPlayer.GPIO_digitalRead(i) == HIGH) {    
-      action = i;
-      break;
-    }
-    delay(50); // Wait a little bit between digital pin read
-  }
+  uint16_t action = musicPlayer.GPIO_digitalRead();
 
-
-  switch(action) {
-  case UP:
+  if (action & UP) {
     showAtXY("UP   ", 10, 1);
 
     if (volume > 0) {
@@ -97,9 +85,9 @@ void loop() {
     musicPlayer.setVolume(volume,volume);
 
     afterAction();
-    break;
 
-  case DOWN:
+  }
+  if (action & DOWN) {
     showAtXY("DOWN ", 10, 1);
 
     if (volume < 20) {
@@ -108,9 +96,8 @@ void loop() {
     musicPlayer.setVolume(volume,volume);
 
     afterAction();
-    break;
-
-  case LEFT:
+  }
+  if (action & LEFT) {
     showAtXY("LEFT ", 10, 1);
 
     musicPlayer.stopPlaying();
@@ -120,9 +107,8 @@ void loop() {
     hidePause();
 
     afterAction();
-    break;
-
-  case RIGHT:
+  }
+  if (action & RIGHT) {
     showAtXY("RIGHT", 10, 1);
 
     musicPlayer.stopPlaying();
@@ -132,9 +118,8 @@ void loop() {
     hidePause();
 
     afterAction();
-    break;
-
-  case PRESS:
+  }
+  if (action & PRESS) {
     showAtXY("PRESS", 10, 1);
 
     if (!musicPlayer.paused()) {
@@ -147,16 +132,15 @@ void loop() {
     }
 
     afterAction();
-    break;
-
-  case NO_ACTION:
+  }
+  if  (action == 0) {
     if (last_action == true) {
       showAtXY("     ", 10, 1);
       last_action = false;
     }
-    break;
   }
 
+  delay(100);
   displayElapsedTime();
 }
 
@@ -164,6 +148,8 @@ void afterAction() {
   last_action = true;
   delay(PAUSE_AFTER_ACTION);
 }
+
+
 
 
 
