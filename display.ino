@@ -25,9 +25,8 @@ char* formatTime(char* buffer, uint16_t time) {
   snprintf(buffer, 9, "%02i:%02i:%02i", hours, minutes, seconds);  
 }
 
-char timebuffer[10];
-
 void displayElapsedTime() {
+  char timebuffer[10];
   formatTime(timebuffer, musicPlayer.decodeTime());
   showAtXY(timebuffer, 1, 1);
 }
@@ -40,4 +39,5 @@ void displayPause() {
 void hidePause() {
   showAtXY(" ", 0, 1);
 }
+
 
