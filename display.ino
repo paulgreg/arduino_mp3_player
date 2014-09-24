@@ -22,14 +22,10 @@ char* formatTime(char* buffer, uint16_t time) {
   uint8_t minutes = (time % 3600) / 60;
   uint8_t seconds = (time% 3600) % 60; 
 
-  int8_t num = sprintf(buffer, "%02i:%02i:%02i", hours, minutes, seconds);
-  
-  if(num >= 9 – 1 || num < 0) {
-    showAtXY("BUFFER OVERFLOW", 0, 1);
-  } 
+  snprintf(buffer, 9, "%02i:%02i:%02i", hours, minutes, seconds);  
 }
 
-char timebuffer[9];
+char timebuffer[10];
 
 void displayElapsedTime() {
   formatTime(timebuffer, musicPlayer.decodeTime());
