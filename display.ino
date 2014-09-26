@@ -8,9 +8,13 @@ void showatY(char * m, uint8_t y) {
 }
 
 void showAtXY(char * m, uint8_t x, uint8_t y) {
-#ifdef LCD
-  lcd.setCursor(x, y);
-  lcd.print(m);
+#ifdef OLED
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(x, y);
+  display.print(m);
+  display.display();
 #endif
 #ifdef SERIAL
   Serial.println(m);
@@ -18,11 +22,11 @@ void showAtXY(char * m, uint8_t x, uint8_t y) {
 }
 
 char* formatTime(char* buffer, uint16_t time) {
-  uint8_t hours = time / 3600;
-  uint8_t minutes = (time % 3600) / 60;
-  uint8_t seconds = (time% 3600) % 60; 
+  uint8_t hours = (time / 3600);
+  uint8_t minutes = ((time % 3600) / 60);
+  uint8_t seconds = ((time % 3600) % 60);
 
-  snprintf(buffer, 9, "%02i:%02i:%02i", hours, minutes, seconds);  
+  snprintf(buffer, 10, "%02i:%02i:%02i", hours, minutes, seconds);
 }
 
 void displayElapsedTime() {
