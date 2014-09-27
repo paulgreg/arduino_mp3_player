@@ -21,6 +21,12 @@ A home made mp3/ogg/flac player based on an Ardnuino Micro, a VS1053 DSP and a 1
 To connect the DSP, use the [Frank Cohen’s wiring diagram](http://votsh.files.wordpress.com/2014/02/vs1053-arduino-micro-connections.pdf). 
 Beware, there’s a mistake on the DREQ connection from the DSP that should be connected to the pin 3 of the Arduino (and not the RESET).
 
+OLED display is connected as [described from tutorial](https://learn.adafruit.com/monochrome-oled-breakouts/wiring-128x32-spi-oled-display), using Arduino PIN 9 to 12, using "software SPI" (distinct from VS1053 "hardware" one - using same "hardware" SPI causes artefacts on display).
+
+5 way button is connected to Arduino PIN A0 using multiple resistors like [described here](http://www.instructables.com/id/Accessing-5-buttons-through-1-Arduino-pin-Revisi/).
+
+
+
 ## Resources ##
 
 - [Adafruit VS1053 library](https://github.com/adafruit/Adafruit_VS1053_Library),
