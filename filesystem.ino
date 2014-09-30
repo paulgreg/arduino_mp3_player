@@ -1,5 +1,6 @@
 
 /// File listing helper
+/*
 void printDirectory(File dir, int numTabs) {
   while(true) {
 
@@ -25,4 +26,4 @@ void printDirectory(File dir, int numTabs) {
     entry.close();
   }
 }
-
+*/

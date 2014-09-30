@@ -31,19 +31,27 @@ Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
 */
 
+#define NOACTION 0
+#define UP       1
+#define DOWN     2
+#define LEFT     3
+#define RIGHT    4
+#define PRESS    5
+
 #define PAUSE_AFTER_ACTION 250
 
 #define OLED true
 
+// Globals
 uint8_t volume = 20;
+char* song;
 
 void setup() {
 
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   // 5 Way button
   pinMode(A0, INPUT);
-
 
 #ifdef OLED
   display.begin(SSD1306_SWITCHCAPVCC);
@@ -63,82 +71,61 @@ void setup() {
   musicPlayer.setVolume(volume, volume); // Set volume for left, right channels. lower numbers == louder volume!
 
   // list files
-  printDirectory(SD.open("/"), 0);
+  //printDirectory(SD.open("/"), 0);
 
   // Launch music at first
-  musicPlayer.startPlayingFile("track002.mp3");
-  show("Playing track002");
+  song = "track002.mp3";
+  musicPlayer.startPlayingFile(song);
 }
 
-// Globals
 
 void loop() {
 
   // Check inputs
-  uint16_t action = analogRead(A0);
+  uint8_t action = readButton(analogRead(A0));
 
-Serial.println(action);
-
-  if (action > 940 && action < 960) {
+  if (action == UP) {
     if (volume < 20) {
       volume++;
     }
-    char buffer[3];
-    snprintf(buffer, 3, "%02i", volume);
-    show(buffer);
-    
     musicPlayer.setVolume(volume, volume);
 
     afterAction();
-  }
-  if (action > 750 && action < 780) {
+    
+  } else if (action == DOWN) {
     if (volume > 0) {
       volume--;
     }
-    char buffer[3];
-    snprintf(buffer, 3, "%02i", volume);
-    show(buffer);
-
     musicPlayer.setVolume(volume, volume);
     afterAction();
-  }
-  if (action > 910 && action < 940) {
-    show("LEFT");
-
+    
+  } else if (action == LEFT) {
     musicPlayer.stopPlaying();
     delay(50);
-    musicPlayer.startPlayingFile("track002.mp3");
-    show("Playing track002");
-    hidePause();
+    song = "track002.mp3";
+    musicPlayer.startPlayingFile(song);
 
     afterAction();
-  }
-  if (action > 1000 && action < 1040) {
-    show("RIGHT");
-
+    
+  } else if (action == RIGHT) {
     musicPlayer.stopPlaying();
     delay(50);
-    musicPlayer.startPlayingFile("track001.mp3");
-    show("Playing track001");
-    hidePause();
+    song = "track001.mp3";
+    musicPlayer.startPlayingFile(song);
 
     afterAction();
-  }
-  if (action > 820 && action < 860) {
-    show("PRESS");
-
+    
+  } else if (action == PRESS) {
     if (!musicPlayer.paused()) {
       musicPlayer.pausePlaying(true);
-      displayPause();
     }
     else {
       musicPlayer.pausePlaying(false);
-      hidePause();
     }
 
     afterAction();
   }
-  
+
   updateDisplay();
   delay(50);
 }
@@ -146,6 +133,25 @@ Serial.println(action);
 void afterAction() {
   delay(PAUSE_AFTER_ACTION);
 }
+
+uint8_t readButton(uint16_t action) {
+  Serial.println(action);
+
+  if (action > 940 && action < 960) {
+    return UP;
+  } else if (action > 750 && action < 780) {
+    return DOWN;
+  } else if (action > 910 && action < 940) {
+    return LEFT;
+  } else if (action > 1000 && action < 1040) {
+    return RIGHT;
+  } else if (action > 820 && action < 860) {
+    return PRESS;
+  } else {
+    return NOACTION;
+  }
+}
+
 
 
 

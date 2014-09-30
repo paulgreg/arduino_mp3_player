@@ -19,18 +19,25 @@ char* formatTime(char* buffer, uint16_t time) {
 }
 
 void updateDisplay() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  
+  display.setCursor(0, 0);
+  display.print((!musicPlayer.paused()) ? ">" : "\"");
+  
+  display.setCursor(10, 0);
+  display.print(song);
+
   char timebuffer[9];
   formatTime(timebuffer, musicPlayer.decodeTime());
-  show(timebuffer);
+  display.setCursor(0, 10);
+  display.print(timebuffer);
+
+  char volbuffer[3];
+  snprintf(volbuffer, 3, "%02i", volume);
+  display.setCursor(110, 10);
+  display.print(volbuffer);
+ 
+  display.display();
 }
-
-
-void displayPause() {
-  show("\"");
-}
-
-void hidePause() {
-  show(" ");
-}
-
-
