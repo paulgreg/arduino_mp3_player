@@ -29,7 +29,7 @@ OLED display is connected as [described from tutorial](https://learn.adafruit.co
 
 ## Resources ##
 
-- [Adafruit VS1053 library](https://github.com/adafruit/Adafruit_VS1053_Library),
+- [Adafruit (forked) VS1053 library](https://github.com/paulgreg/Adafruit_VS1053_Library),
 - [VS1053b Datasheet](https://www.adafruit.com/datasheets/vs1053.pdf),
 - [SSD1306 OLED driver library](https://github.com/adafruit/Adafruit_SSD1306)
 - [OLED Datasheet](https://www.adafruit.com/datasheets/UG-2832HSWEG04.pdf),
