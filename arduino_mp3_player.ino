@@ -14,7 +14,7 @@
 
 Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(VS1053_RESET, VS1053_CS, VS1053_DCS, VS1053_DREQ, VS1053_CARDCS);
 
-// Software SPI
+// Software SPI - screen shows snow if sharing hardware SPI with SDCARD/DSP
 #define OLED_MOSI   9
 #define OLED_CLK   10
 #define OLED_DC    11
@@ -23,13 +23,6 @@ Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(VS1053_RESET
 
 Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
-/*
-// Hardware SPI
-#define OLED_DC     7
-#define OLED_CS     11
-#define OLED_RESET  13
-Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
-*/
 
 #define NOACTION 0
 #define UP       1
@@ -40,25 +33,35 @@ Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
 
 #define PAUSE_AFTER_ACTION 250
 
-#define OLED true
+#define VOL_MAX 49
+#define ROWS 4
+#define FILES 25
 
 // Globals
-uint8_t volume = 20;
-char* song;
+boolean playing = false;
+uint8_t offset = 0;
+uint8_t selection = 0;
+char* fileList[FILES];
+boolean directoryList[FILES];
+uint8_t fileNumber = 0;
+
+struct StateStruct {
+  uint8_t volume;
+  char* path;
+} state = {
+  25,
+  "/"
+};
 
 void setup() {
+  Serial.begin(9600);
 
-  //Serial.begin(9600);
+  pinMode(A0, INPUT); // 5 Way button
 
-  // 5 Way button
-  pinMode(A0, INPUT);
-
-#ifdef OLED
   display.begin(SSD1306_SWITCHCAPVCC);
   display.display();
   delay(500);
   display.clearDisplay();
-#endif
 
   if (!musicPlayer.begin() || !SD.begin(VS1053_CARDCS)) {
     show("VS1053 or SDCARD not found");
@@ -68,100 +71,97 @@ void setup() {
     show("DREQ pin not irq");
   }
 
-  musicPlayer.setVolume(volume, volume); // Set volume for left, right channels. lower numbers == louder volume!
+  musicPlayer.setVolume(state.volume, state.volume); // Set volume for left, right channels. lower numbers == louder volume!
 
-  // list files
-  //printDirectory(SD.open("/"), 0);
-
-  // Launch music at first
-  song = "track002.mp3";
-  musicPlayer.startPlayingFile(song);
+  fillFileList(state.path);
 }
 
-
 void loop() {
-
   // Check inputs
-  uint8_t action = readButton(analogRead(A0));
+  byte action = readButton(analogRead(A0));
 
-  if (action == UP) {
-    if (volume < 20) {
-      volume++;
-    }
-    musicPlayer.setVolume(volume, volume);
+  if (!playing) {
 
-    afterAction();
-    
-  } else if (action == DOWN) {
-    if (volume > 0) {
-      volume--;
-    }
-    musicPlayer.setVolume(volume, volume);
-    afterAction();
-    
-  } else if (action == LEFT) {
-    musicPlayer.stopPlaying();
-    delay(50);
-    song = "track002.mp3";
-    musicPlayer.startPlayingFile(song);
+    if (action == UP) {
+      if (selection > 0) {
+        selection--;
+        if (selection < offset) {
+          offset--;
+        }
+      }
+    } else if (action == DOWN) {
+      if (selection < fileNumber - 2) {
+        selection++;
+        if (selection >= offset + ROWS) {
+          offset = selection - ROWS + 1;
+        }
+      }
+    } else if (action == LEFT) {
+      // Go back
+    } else if (action == RIGHT || action == PRESS) {
 
-    afterAction();
-    
-  } else if (action == RIGHT) {
-    musicPlayer.stopPlaying();
-    delay(50);
-    song = "track001.mp3";
-    musicPlayer.startPlayingFile(song);
-
-    afterAction();
-    
-  } else if (action == PRESS) {
-    if (!musicPlayer.paused()) {
-      musicPlayer.pausePlaying(true);
-    }
-    else {
-      musicPlayer.pausePlaying(false);
+      if (directoryList[selection]) { // Directory
+        //fillFileList(fileList[selection]);
+        //offset = selection = 0;
+      } else { // File
+        musicPlayer.startPlayingFile(fileList[selection]);
+        playing = true;
+      }
+      delay(PAUSE_AFTER_ACTION);
     }
 
-    afterAction();
+  } else {
+
+    if (action == UP) {
+      if (state.volume > 0) {
+        state.volume--;
+      }
+      musicPlayer.setVolume(state.volume, state.volume);
+
+    } else if (action == DOWN) {
+      if (state.volume < VOL_MAX) {
+        state.volume++;
+      }
+      musicPlayer.setVolume(state.volume, state.volume);
+
+    } else if (action == LEFT || action == RIGHT) {
+
+      musicPlayer.stopPlaying();
+      playing = false;
+
+    } else if (action == PRESS) {
+      if (!musicPlayer.paused()) {
+        musicPlayer.pausePlaying(true);
+      } else {
+        musicPlayer.pausePlaying(false);
+      }
+
+      delay(PAUSE_AFTER_ACTION);
+    }
   }
 
   updateDisplay();
   delay(50);
 }
 
-void afterAction() {
-  delay(PAUSE_AFTER_ACTION);
-}
 
-uint8_t readButton(uint16_t action) {
-  Serial.println(action);
+void fillFileList(char* path) {
 
-  if (action > 940 && action < 960) {
-    return UP;
-  } else if (action > 750 && action < 780) {
-    return DOWN;
-  } else if (action > 910 && action < 940) {
-    return LEFT;
-  } else if (action > 1000 && action < 1040) {
-    return RIGHT;
-  } else if (action > 820 && action < 860) {
-    return PRESS;
-  } else {
-    return NOACTION;
+  Serial.println(path);
+  File dir = SD.open(path);
+
+  for (uint8_t i = 0; i < FILES; i++)  {
+    Serial.print("> ");
+    Serial.print(i);
+    Serial.print("> ");
+    File entry = dir.openNextFile();
+    if (!entry) break;
+    fileList[i] = strdup(entry.name());
+    directoryList[i] = entry.isDirectory();
+    Serial.println(fileList[i]);
+
+    fileNumber = i;
+    entry.close();
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
