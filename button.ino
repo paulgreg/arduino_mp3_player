@@ -1,5 +1,4 @@
-
-byte readButton(uint16_t action) {
+uint8_t readButton(uint16_t action) {
   if (action > 940 && action < 960) {
     return UP;
   } else if (action > 750 && action < 780) {

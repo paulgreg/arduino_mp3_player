@@ -35,33 +35,31 @@ Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
 #define VOL_MAX 49
 #define ROWS 4
-#define FILES 25
+#define MAX_FILES 25
+#define MAX_DEPTH 25
 
 // Globals
 boolean playing = false;
 uint8_t offset = 0;
 uint8_t selection = 0;
-char* fileList[FILES];
-boolean directoryList[FILES];
+char* fileList[MAX_FILES];
+boolean directoryList[MAX_FILES];
 uint8_t fileNumber = 0;
 
 struct StateStruct {
   uint8_t volume;
-  char* path;
+  char path[MAX_DEPTH];
 } state = {
-  25,
+  30,
   "/"
 };
 
 void setup() {
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   pinMode(A0, INPUT); // 5 Way button
 
   display.begin(SSD1306_SWITCHCAPVCC);
-  display.display();
-  delay(500);
-  display.clearDisplay();
 
   if (!musicPlayer.begin() || !SD.begin(VS1053_CARDCS)) {
     show("VS1053 or SDCARD not found");
@@ -69,6 +67,7 @@ void setup() {
   }
   if (!musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT)) {
     show("DREQ pin not irq");
+    while (1); // don't do anything more
   }
 
   musicPlayer.setVolume(state.volume, state.volume); // Set volume for left, right channels. lower numbers == louder volume!
@@ -78,7 +77,7 @@ void setup() {
 
 void loop() {
   // Check inputs
-  byte action = readButton(analogRead(A0));
+  uint8_t action = readButton(analogRead(A0));
 
   if (!playing) {
 
@@ -90,7 +89,7 @@ void loop() {
         }
       }
     } else if (action == DOWN) {
-      if (selection < fileNumber - 2) {
+      if (selection < fileNumber) {
         selection++;
         if (selection >= offset + ROWS) {
           offset = selection - ROWS + 1;
@@ -98,15 +97,38 @@ void loop() {
       }
     } else if (action == LEFT) {
       // Go back
-    } else if (action == RIGHT || action == PRESS) {
+      uint8_t l = strlen(state.path) - 2;
+      while (l > 1 && state.path[l] != '/')  {
+        l--;
+      }
+      state.path[l] = '\0';
+
+      fillFileList(state.path);
+      offset = selection = 0;
+
+    } else if (action == RIGHT) {
 
       if (directoryList[selection]) { // Directory
-        //fillFileList(fileList[selection]);
-        //offset = selection = 0;
-      } else { // File
-        musicPlayer.startPlayingFile(fileList[selection]);
-        playing = true;
+
+        strcat(state.path, fileList[selection]);
+        strcat(state.path, "/");
+
+        fillFileList(state.path);
+        offset = selection = 0;
       }
+      delay(PAUSE_AFTER_ACTION);
+
+    } else if (action == PRESS) {
+
+      if (!directoryList[selection]) { // File
+        char song[MAX_DEPTH] = "\0";
+        strcat(song, state.path);
+        strcat(song, fileList[selection]);
+        musicPlayer.startPlayingFile(song);
+        playing = true;
+        free(song);
+      }
+
       delay(PAUSE_AFTER_ACTION);
     }
 
@@ -129,6 +151,8 @@ void loop() {
       musicPlayer.stopPlaying();
       playing = false;
 
+      delay(PAUSE_AFTER_ACTION);
+
     } else if (action == PRESS) {
       if (!musicPlayer.paused()) {
         musicPlayer.pausePlaying(true);
@@ -147,19 +171,17 @@ void loop() {
 
 void fillFileList(char* path) {
 
-  Serial.println(path);
+  for (uint8_t i = 0; i < fileNumber; i++)  {
+    free(fileList[i]);
+  }
+
   File dir = SD.open(path);
 
-  for (uint8_t i = 0; i < FILES; i++)  {
-    Serial.print("> ");
-    Serial.print(i);
-    Serial.print("> ");
+  for (uint8_t i = 0; i < MAX_FILES; i++)  {
     File entry = dir.openNextFile();
     if (!entry) break;
     fileList[i] = strdup(entry.name());
     directoryList[i] = entry.isDirectory();
-    Serial.println(fileList[i]);
-
     fileNumber = i;
     entry.close();
   }

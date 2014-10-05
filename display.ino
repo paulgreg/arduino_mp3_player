@@ -12,27 +12,26 @@ void updateDisplay() {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
-  
+
   if (!playing) {
-    
-    for (uint8_t i = offset; i < (offset + ROWS) && i < fileNumber; i++) {
-      display.print((selection == i) ? "> " : "  ");    
+
+    for (uint8_t i = offset; i < (offset + ROWS) && i <= fileNumber; i++) {
+      display.print((selection == i) ? "> " : "  ");
       display.print(fileList[i]);
       display.println(directoryList[i] ? "/" : "");
     }
 
-  } else {  
-    
+  } else {
     display.print((!musicPlayer.paused()) ? " > " : " \" ");
-    
+
     display.setCursor(15, 0);
     display.print(fileList[selection]);
-  
+
     char timebuffer[9];
     formatTime(timebuffer, musicPlayer.decodeTime());
     display.setCursor(0, 10);
     display.print(timebuffer);
-  
+
     char volbuffer[3];
     snprintf(volbuffer, 3, "%02i", VOL_MAX  + 1 - state.volume);
     display.setCursor(110, 10);
